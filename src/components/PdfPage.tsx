@@ -168,6 +168,61 @@ export const PdfPage: React.FC<PdfPageProps> = ({
     [settings.hoverDictionaryEnabled, onHoverText]
   );
 
+  // Track touch start position to distinguish tap from scrolling
+  const touchStartPos = useRef<{ x: number; y: number } | null>(null);
+
+  const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
+    if (e.touches.length === 1) {
+      touchStartPos.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+    }
+  };
+
+  const handleTouchEnd = useCallback(
+    (e: React.TouchEvent<HTMLDivElement>) => {
+      if (!settings.hoverDictionaryEnabled) return;
+      if (!touchStartPos.current || e.changedTouches.length === 0) return;
+
+      const touch = e.changedTouches[0];
+      const dx = Math.abs(touch.clientX - touchStartPos.current.x);
+      const dy = Math.abs(touch.clientY - touchStartPos.current.y);
+      touchStartPos.current = null;
+
+      // Only trigger if it was a quick tap, not a scroll gesture
+      if (dx > 10 || dy > 10) return;
+
+      // Check if user has active text selection
+      const selection = window.getSelection();
+      if (selection && !selection.isCollapsed) return;
+
+      let targetNode: Node | null = null;
+      let offset: number = 0;
+
+      if (document.caretRangeFromPoint) {
+        const range = document.caretRangeFromPoint(touch.clientX, touch.clientY);
+        if (range && range.startContainer.nodeType === Node.TEXT_NODE) {
+          targetNode = range.startContainer;
+          offset = range.startOffset;
+        }
+      } else if ((document as any).caretPositionFromPoint) {
+        const pos = (document as any).caretPositionFromPoint(touch.clientX, touch.clientY);
+        if (pos && pos.offsetNode.nodeType === Node.TEXT_NODE) {
+          targetNode = pos.offsetNode;
+          offset = pos.offset;
+        }
+      }
+
+      if (targetNode && targetNode.textContent) {
+        const fullText = targetNode.textContent;
+        const safeOffset = Math.min(Math.max(0, offset), fullText.length - 1);
+        const parentSpan = targetNode.parentElement;
+        const domRect = parentSpan ? parentSpan.getBoundingClientRect() : (e.target as HTMLElement).getBoundingClientRect();
+
+        onHoverText(fullText, safeOffset, targetNode, domRect);
+      }
+    },
+    [settings.hoverDictionaryEnabled, onHoverText]
+  );
+
   // Handle Selection completion on mouseup
   const handleMouseUp = useCallback(() => {
     const selection = window.getSelection();
@@ -219,6 +274,8 @@ export const PdfPage: React.FC<PdfPageProps> = ({
       onMouseUp={handleMouseUp}
       onMouseMove={handleMouseMove}
       onMouseLeave={onHoverLeave}
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
       style={{
         width: pageWidth ? `${pageWidth}px` : 'auto',
         height: pageHeight ? `${pageHeight}px` : 'auto',

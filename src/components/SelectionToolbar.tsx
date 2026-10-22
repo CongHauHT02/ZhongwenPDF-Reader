@@ -39,6 +39,14 @@ export const SelectionToolbar: React.FC<SelectionToolbarProps> = ({
 
   const { x, y } = selection.menuPosition;
 
+  const viewportWidth = typeof window !== 'undefined' ? window.innerWidth : 1000;
+  // Clamp left position so the toolbar never gets clipped outside screen
+  const clampedX = Math.max(140, Math.min(viewportWidth - 140, x));
+  // If y is too close to top (< 70px), show it below the selection instead
+  const isTopClipped = y < 70;
+  const clampedY = isTopClipped ? y + 36 : y;
+  const transform = isTopClipped ? 'translate(-50%, 0)' : 'translate(-50%, -100%) translateY(-10px)';
+
   const handleCopy = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -51,12 +59,12 @@ export const SelectionToolbar: React.FC<SelectionToolbarProps> = ({
     <div
       style={{
         position: 'fixed',
-        left: `${x}px`,
-        top: `${y}px`,
-        transform: 'translate(-50%, -100%) translateY(-10px)',
+        left: `${clampedX}px`,
+        top: `${clampedY}px`,
+        transform,
         zIndex: 9998,
       }}
-      className="animate-in fade-in zoom-in-95 duration-100 flex items-center bg-slate-900/95 backdrop-blur-md border border-slate-700 shadow-2xl rounded-lg p-1 gap-1 text-slate-200 select-none text-xs"
+      className="animate-in fade-in zoom-in-95 duration-100 flex items-center bg-slate-900/95 backdrop-blur-md border border-slate-700 shadow-2xl rounded-xl p-1 gap-1 text-slate-200 select-none text-xs max-w-[calc(100vw-16px)] overflow-x-auto"
       onMouseDown={(e) => {
         // Prevent deselecting text on click
         e.preventDefault();
@@ -66,19 +74,19 @@ export const SelectionToolbar: React.FC<SelectionToolbarProps> = ({
       {/* 1. Lookup */}
       <button
         onClick={() => onLookup(selection.text)}
-        className="flex items-center gap-1 px-2.5 py-1.5 rounded hover:bg-slate-800 hover:text-amber-400 transition-colors font-medium"
+        className="flex items-center gap-1 px-2 py-1.5 rounded hover:bg-slate-800 hover:text-amber-400 transition-colors font-medium flex-shrink-0"
         title="Tra từ điển"
       >
         <BookOpen className="w-3.5 h-3.5 text-amber-400" />
-        <span>Tra từ</span>
+        <span className="hidden sm:inline">Tra từ</span>
       </button>
 
-      <div className="w-[1px] h-4 bg-slate-800" />
+      <div className="w-[1px] h-4 bg-slate-800 flex-shrink-0" />
 
       {/* 2. Pin Pinyin */}
       <button
         onClick={onPinPinyin}
-        className="flex items-center gap-1 px-2 py-1.5 rounded hover:bg-slate-800 hover:text-orange-400 transition-colors font-medium"
+        className="flex items-center gap-1 px-2 py-1.5 rounded hover:bg-slate-800 hover:text-orange-400 transition-colors font-medium flex-shrink-0"
         title="Hiển thị Pinyin phía trên từ"
       >
         <BookmarkPlus className="w-3.5 h-3.5 text-orange-400" />
@@ -88,24 +96,24 @@ export const SelectionToolbar: React.FC<SelectionToolbarProps> = ({
       {/* 3. Pin Vietnamese */}
       <button
         onClick={onPinVietnamese}
-        className="flex items-center gap-1 px-2 py-1.5 rounded hover:bg-slate-800 hover:text-emerald-400 transition-colors font-medium"
+        className="flex items-center gap-1 px-2 py-1.5 rounded hover:bg-slate-800 hover:text-emerald-400 transition-colors font-medium flex-shrink-0"
         title="Hiển thị nghĩa tiếng Việt"
       >
         <Languages className="w-3.5 h-3.5 text-emerald-400" />
-        <span>Nghĩa TV</span>
+        <span className="hidden sm:inline">Nghĩa</span>
       </button>
 
-      <div className="w-[1px] h-4 bg-slate-800" />
+      <div className="w-[1px] h-4 bg-slate-800 flex-shrink-0" />
 
       {/* 4. Highlight with dropdown color picker */}
-      <div className="relative">
+      <div className="relative flex-shrink-0">
         <button
           onClick={() => setShowColorPicker(!showColorPicker)}
           className="flex items-center gap-1 px-2 py-1.5 rounded hover:bg-slate-800 hover:text-yellow-400 transition-colors font-medium"
           title="Đánh dấu highlight"
         >
           <Highlighter className="w-3.5 h-3.5 text-yellow-400" />
-          <span>Tô màu</span>
+          <span className="hidden sm:inline">Màu</span>
           <ChevronDown className="w-3 h-3 text-slate-400" />
         </button>
 
@@ -127,12 +135,12 @@ export const SelectionToolbar: React.FC<SelectionToolbarProps> = ({
         )}
       </div>
 
-      <div className="w-[1px] h-4 bg-slate-800" />
+      <div className="w-[1px] h-4 bg-slate-800 flex-shrink-0" />
 
       {/* 5. Add Note */}
       <button
         onClick={onAddNote}
-        className="flex items-center gap-1 px-2 py-1.5 rounded hover:bg-slate-800 hover:text-sky-400 transition-colors font-medium"
+        className="flex items-center gap-1 px-2 py-1.5 rounded hover:bg-slate-800 hover:text-sky-400 transition-colors font-medium flex-shrink-0"
         title="Thêm ghi chú cá nhân"
       >
         <FileText className="w-3.5 h-3.5 text-sky-400" />
@@ -142,7 +150,7 @@ export const SelectionToolbar: React.FC<SelectionToolbarProps> = ({
       {/* 6. Copy */}
       <button
         onClick={handleCopy}
-        className="p-1.5 rounded hover:bg-slate-800 hover:text-white transition-colors"
+        className="p-1.5 rounded hover:bg-slate-800 hover:text-white transition-colors flex-shrink-0"
         title="Sao chép văn bản"
       >
         {copied ? (
@@ -155,7 +163,7 @@ export const SelectionToolbar: React.FC<SelectionToolbarProps> = ({
       {/* 7. Close */}
       <button
         onClick={onClose}
-        className="p-1.5 rounded hover:bg-slate-800 hover:text-red-400 transition-colors ml-0.5"
+        className="p-1.5 rounded hover:bg-slate-800 hover:text-red-400 transition-colors ml-0.5 flex-shrink-0"
         title="Đóng menu"
       >
         <X className="w-3.5 h-3.5" />

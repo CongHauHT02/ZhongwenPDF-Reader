@@ -80,9 +80,16 @@ export const NotesPanel: React.FC<NotesPanelProps> = ({
   if (!isOpen) return null;
 
   return (
-    <aside
-      className="fixed right-0 top-0 bottom-0 w-80 sm:w-96 bg-slate-900/95 backdrop-blur-md border-l border-slate-800 shadow-2xl flex flex-col z-50 text-slate-100 animate-in slide-in-from-right duration-200"
-    >
+    <>
+      {/* Mobile Backdrop */}
+      <div
+        onClick={onClose}
+        className="fixed inset-0 bg-black/60 backdrop-blur-sm sm:hidden z-40 animate-in fade-in"
+      />
+
+      <aside
+        className="fixed right-0 top-0 bottom-0 w-full sm:w-96 max-w-full bg-slate-900/95 backdrop-blur-md border-l border-slate-800 shadow-2xl flex flex-col z-50 text-slate-100 animate-in slide-in-from-right duration-200"
+      >
       {/* Header */}
       <div className="p-4 border-b border-slate-800 flex items-center justify-between">
         <div className="flex items-center gap-2">
@@ -230,5 +237,6 @@ export const NotesPanel: React.FC<NotesPanelProps> = ({
         </div>
       )}
     </aside>
+    </>
   );
 };

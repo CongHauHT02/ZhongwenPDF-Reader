@@ -38,8 +38,14 @@ export const RecentDocumentsDrawer: React.FC<RecentDocumentsDrawerProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex bg-black/60 backdrop-blur-sm animate-in fade-in">
-      <div className="w-80 sm:w-96 bg-slate-900 border-r border-slate-800 h-full p-4 flex flex-col text-slate-100 shadow-2xl">
+    <div
+      onClick={onClose}
+      className="fixed inset-0 z-50 flex bg-black/60 backdrop-blur-sm animate-in fade-in"
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="w-full max-w-sm sm:w-96 bg-slate-900 border-r border-slate-800 h-full p-4 flex flex-col text-slate-100 shadow-2xl animate-in slide-in-from-left"
+      >
         {/* Header */}
         <div className="flex items-center justify-between border-b border-slate-800 pb-3 mb-4">
           <div className="flex items-center gap-2">

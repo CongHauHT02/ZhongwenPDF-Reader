@@ -13,6 +13,21 @@ import { PdfViewer } from './components/PdfViewer';
 import { NotesPanel } from './components/NotesPanel';
 import { RecentDocumentsDrawer } from './components/RecentDocumentsDrawer';
 
+function getInitialScale(): number {
+  if (typeof window === 'undefined') return 1.25;
+  const w = window.innerWidth;
+  if (w < 640) {
+    // Mobile phones (e.g., 360px - 480px width)
+    return +Math.max(0.5, Math.min(1.0, (w - 24) / 595)).toFixed(2);
+  }
+  if (w < 1024) {
+    // Tablets & small laptops (640px - 1023px width)
+    return +Math.max(0.8, Math.min(1.2, (w - 48) / 595)).toFixed(2);
+  }
+  // Standard laptop & desktop (1024px+)
+  return 1.25;
+}
+
 export function App() {
   // Document state
   const [pdfDocument, setPdfDocument] = useState<pdfjsLib.PDFDocumentProxy | null>(null);
@@ -21,7 +36,7 @@ export function App() {
   const [pdfBytes, setPdfBytes] = useState<ArrayBuffer | null>(null);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(0);
-  const [scale, setScale] = useState<number>(1.25);
+  const [scale, setScale] = useState<number>(getInitialScale);
 
   // Annotations state (stored in IndexedDB)
   const [annotations, setAnnotations] = useState<PdfAnnotation[]>([]);
@@ -247,19 +262,14 @@ export function App() {
 
   // Zoom handlers
   const handleZoomIn = () => setScale((s) => Math.min(3.0, +(s + 0.15).toFixed(2)));
-  const handleZoomOut = () => setScale((s) => Math.max(0.6, +(s - 0.15).toFixed(2)));
+  const handleZoomOut = () => setScale((s) => Math.max(0.45, +(s - 0.15).toFixed(2)));
   const handleResetZoom = () => setScale(1.0);
-  const handleToggleFitWidth = () => {
-    // Standard fit width approximation
-    const screenWidth = window.innerWidth;
-    if (screenWidth > 1200) {
-      setScale(1.4);
-    } else if (screenWidth > 768) {
-      setScale(1.1);
-    } else {
-      setScale(0.8);
-    }
-  };
+  const handleToggleFitWidth = useCallback(() => {
+    const screenWidth = typeof window !== 'undefined' ? window.innerWidth : 1200;
+    const padding = screenWidth < 640 ? 20 : screenWidth < 1024 ? 40 : 64;
+    const targetScale = +Math.max(0.45, Math.min(2.5, (screenWidth - padding) / 595)).toFixed(2);
+    setScale(targetScale);
+  }, []);
 
   return (
     <div className="flex flex-col h-screen w-screen bg-slate-950 overflow-hidden font-sans">

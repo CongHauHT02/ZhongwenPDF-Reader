@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
 import type { LookupResult, PdfAnnotation } from '../types';
-import { Volume2, BookmarkPlus, PlusCircle, Languages, FileText } from 'lucide-react';
+import { Volume2, BookmarkPlus, PlusCircle, Languages, FileText, X } from 'lucide-react';
 
 interface DictionaryTooltipProps {
   result: LookupResult | null;
@@ -13,6 +13,7 @@ interface DictionaryTooltipProps {
   onPinPinyin?: (word: string, pinyin: string) => void;
   onPinVietnamese?: (word: string, vietnamese: string) => void;
   onAddNote?: () => void;
+  onClose?: () => void;
 }
 
 // Tone detection regex for standard Pinyin tone marks
@@ -50,6 +51,7 @@ export const DictionaryTooltip: React.FC<DictionaryTooltipProps> = ({
   onPinPinyin,
   onPinVietnamese,
   onAddNote,
+  onClose,
 }) => {
   const tooltipRef = useRef<HTMLDivElement>(null);
 
@@ -68,9 +70,12 @@ export const DictionaryTooltip: React.FC<DictionaryTooltipProps> = ({
 
   const { word, entry } = result;
 
-  // Horizontal rectangular dimensions
-  const tooltipWidth = 460;
+  // Responsive device detection
   const viewportWidth = typeof window !== 'undefined' ? window.innerWidth : 1200;
+  const isMobile = viewportWidth < 640;
+
+  // Horizontal rectangular dimensions for desktop/tablet
+  const tooltipWidth = Math.min(460, viewportWidth - 32);
 
   let left = position.x;
   if (left + tooltipWidth > viewportWidth - 16) {
@@ -88,26 +93,39 @@ export const DictionaryTooltip: React.FC<DictionaryTooltipProps> = ({
       ref={tooltipRef}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
-      style={{
-        position: 'fixed',
-        left: `${left}px`,
-        top: `${top}px`,
-        zIndex: 9999,
-        width: `${tooltipWidth}px`,
-      }}
+      style={
+        isMobile
+          ? {
+              position: 'fixed',
+              left: '12px',
+              right: '12px',
+              bottom: '16px',
+              zIndex: 9999,
+              maxWidth: 'calc(100vw - 24px)',
+            }
+          : {
+              position: 'fixed',
+              left: `${left}px`,
+              top: `${top}px`,
+              zIndex: 9999,
+              width: `${tooltipWidth}px`,
+            }
+      }
       className="animate-in fade-in zoom-in-95 duration-150 bg-[#ffffcc] text-slate-900 border border-amber-400/90 rounded-xl shadow-2xl px-3.5 py-2.5 text-left pointer-events-auto select-none"
     >
-      {/* Pointing Arrow Indicator */}
-      {placement === 'bottom' ? (
-        <div
-          style={{ left: `${safeArrowOffset}px` }}
-          className="absolute -top-2 w-3.5 h-3.5 bg-[#ffffcc] border-t border-l border-amber-400 rotate-45 -translate-x-1/2 pointer-events-none"
-        />
-      ) : (
-        <div
-          style={{ left: `${safeArrowOffset}px` }}
-          className="absolute -bottom-2 w-3.5 h-3.5 bg-[#ffffcc] border-b border-r border-amber-400 rotate-45 -translate-x-1/2 pointer-events-none"
-        />
+      {/* Pointing Arrow Indicator (Desktop / Laptop / Tablet only) */}
+      {!isMobile && (
+        placement === 'bottom' ? (
+          <div
+            style={{ left: `${safeArrowOffset}px` }}
+            className="absolute -top-2 w-3.5 h-3.5 bg-[#ffffcc] border-t border-l border-amber-400 rotate-45 -translate-x-1/2 pointer-events-none"
+          />
+        ) : (
+          <div
+            style={{ left: `${safeArrowOffset}px` }}
+            className="absolute -bottom-2 w-3.5 h-3.5 bg-[#ffffcc] border-b border-r border-amber-400 rotate-45 -translate-x-1/2 pointer-events-none"
+          />
+        )
       )}
 
       {/* Row 1: Hanzi + Traditional + Tone-colored Pinyin + Han-Viet + Audio + Actions */}
@@ -181,6 +199,19 @@ export const DictionaryTooltip: React.FC<DictionaryTooltipProps> = ({
             >
               <PlusCircle className="w-3 h-3 text-sky-700" />
               <span>Ghi chú</span>
+            </button>
+          )}
+
+          {onClose && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onClose();
+              }}
+              className="p-1 rounded hover:bg-amber-200 text-slate-500 hover:text-slate-800 transition-colors ml-0.5"
+              title="Đóng bảng tra từ"
+            >
+              <X className="w-3.5 h-3.5" />
             </button>
           )}
         </div>

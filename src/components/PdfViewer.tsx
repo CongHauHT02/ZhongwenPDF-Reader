@@ -502,7 +502,7 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
       }}
       onDragLeave={() => setIsDraggingOver(false)}
       onDrop={handleDrop}
-      className={`relative flex-1 overflow-y-auto overflow-x-hidden bg-slate-950 p-4 sm:p-8 flex flex-col items-center min-h-[calc(100vh-3.5rem)] transition-colors ${
+      className={`relative flex-1 overflow-auto bg-slate-950 p-2 sm:p-4 lg:p-8 flex flex-col items-center min-h-[calc(100vh-3.5rem)] transition-colors ${
         isDraggingOver ? 'bg-amber-950/20 ring-2 ring-amber-500 ring-inset' : ''
       }`}
     >
@@ -510,25 +510,25 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
           Empty State: When no PDF is loaded
           ======================================================== */}
       {!pdfDocument && (
-        <div className="max-w-xl w-full my-auto text-center space-y-6 p-8 rounded-3xl bg-slate-900/80 border border-slate-800 shadow-2xl backdrop-blur-sm animate-in fade-in zoom-in-95">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-amber-500 to-rose-500 flex items-center justify-center mx-auto shadow-xl text-3xl font-serifZh font-bold text-white">
+        <div className="max-w-xl w-full my-auto text-center space-y-5 p-5 sm:p-8 rounded-2xl sm:rounded-3xl bg-slate-900/80 border border-slate-800 shadow-2xl backdrop-blur-sm animate-in fade-in zoom-in-95">
+          <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-gradient-to-tr from-amber-500 to-rose-500 flex items-center justify-center mx-auto shadow-xl text-2xl sm:text-3xl font-serifZh font-bold text-white">
             中
           </div>
 
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-slate-100 tracking-tight">
+            <h1 className="text-xl sm:text-3xl font-bold text-slate-100 tracking-tight">
               Đọc & Tra Từ Điển Tiếng Trung Trên PDF
             </h1>
-            <p className="text-sm text-slate-400 mt-2 leading-relaxed">
-              Lấy cảm hứng từ <strong>Zhongwen</strong> và <strong>Hanzii</strong>. Hỗ trợ rê chuột tra từ tự động, gắn Pinyin, nghĩa tiếng Việt, tô màu highlight và ghi chú trực tiếp.
+            <p className="text-xs sm:text-sm text-slate-400 mt-2 leading-relaxed">
+              Lấy cảm hứng từ <strong>Zhongwen</strong> và <strong>Hanzii</strong>. Hỗ trợ rê chuột / chạm tra từ tức thì, gắn Pinyin, nghĩa tiếng Việt, tô màu highlight và ghi chú trực tiếp.
             </p>
           </div>
 
           {/* Action buttons */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
-            <label className="w-full sm:w-auto cursor-pointer flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-sm shadow-lg shadow-amber-500/20 transition-all hover:scale-105">
+            <label className="w-full sm:w-auto cursor-pointer flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs sm:text-sm shadow-lg shadow-amber-500/20 transition-all hover:scale-105 active:scale-95">
               <Upload className="w-4 h-4" />
-              <span>Tải file PDF từ máy tính</span>
+              <span>Tải file PDF từ thiết bị</span>
               <input
                 type="file"
                 accept=".pdf,application/pdf"
@@ -542,7 +542,7 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
 
             <button
               onClick={onOpenSamplePdf}
-              className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-300 font-semibold text-sm border border-slate-700 shadow transition-all hover:scale-105"
+              className="w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-300 font-semibold text-xs sm:text-sm border border-slate-700 shadow transition-all hover:scale-105 active:scale-95"
             >
               <Sparkles className="w-4 h-4 text-amber-400" />
               <span>Dùng thử tài liệu mẫu tiếng Trung</span>
@@ -550,15 +550,15 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
           </div>
 
           {/* Drag & Drop hint */}
-          <p className="text-xs text-slate-500">
+          <p className="text-xs text-slate-500 hidden sm:block">
             Hoặc kéo và thả trực tiếp file PDF vào khu vực này
           </p>
 
           {/* Features cards */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 pt-4 text-left">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 pt-3 text-left">
             <div className="bg-slate-800/50 border border-slate-700/40 p-3 rounded-xl">
               <Sparkles className="w-4 h-4 text-amber-400 mb-1.5" />
-              <div className="text-xs font-bold text-slate-200">Hover Tra Từ</div>
+              <div className="text-xs font-bold text-slate-200">Tra Từ Nhanh</div>
               <div className="text-[11px] text-slate-400 mt-0.5">Pinyin, Hán Việt & nghĩa tức thì</div>
             </div>
 
@@ -656,6 +656,12 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
         onPinPinyin={handleTooltipPinPinyin}
         onPinVietnamese={handleTooltipPinVietnamese}
         onAddNote={handleTooltipAddNote}
+        onClose={() => {
+          setHoverResult(null);
+          setHoverPosition(null);
+          setHoverWordRect(null);
+          currentHoverWordRef.current = null;
+        }}
       />
 
       {/* 2. Floating Text Selection Toolbar */}
